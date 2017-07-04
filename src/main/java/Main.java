@@ -1,12 +1,9 @@
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import spark.Request;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import javax.servlet.http.HttpServletResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Map;
 
 import static spark.Spark.*;
 
@@ -31,7 +28,7 @@ public class Main {
         }));
 
 
-        get("/*",((request, response) ->{
+        get("/get/*", ((request, response) -> {
             JsonObject json = new JsonObject();
             json.addProperty("status","Success");
             json.addProperty("method","Get");
@@ -52,6 +49,23 @@ public class Main {
             System.out.println("Put");
             return json.toString();
         }));
+
+        get("/pic/*", (((request, response) -> {
+            response.header("Content-Transfer-Encoding", "binary");
+            response.header("Content-Disposition", "attachment; filename=\"2.jpg\"");
+            try {
+                byte[] bytes = Files.readAllBytes(Paths.get("2.jpg"));
+                HttpServletResponse raw = response.raw();
+                raw.getOutputStream().write(bytes);
+                raw.getOutputStream().flush();
+                raw.getOutputStream().close();
+            } catch (Exception e) {
+                response.status(404);
+            }
+            response.status(200);
+            System.out.println("Get picture");
+            return response.raw();
+        })));
     }
 
     private static String getMapString(Map<String, String[]> map){
